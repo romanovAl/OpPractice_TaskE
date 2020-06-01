@@ -6,7 +6,7 @@ template <typename Number>
 class Uniform
 
 {
-
+   
     std::mt19937 rng;
 
     std::uniform_real_distribution<Number> vg;
