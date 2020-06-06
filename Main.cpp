@@ -4,6 +4,7 @@
 #include "Uniform.h"
 #include <iterator>
 #include<vector>
+#include <functional>
 
 /**
 
@@ -23,62 +24,59 @@ M sqr(M m) {
 	return m * m;
 }
 
+template <typename It>
+It genpoints(size_t N, It from, It to) {
+	// We assume that value_type of It is vector<NT>, thus NT is value_type of value_type of It:
+	using NT = typename iterator_traits<It>::value_type::value_type;
 
-template<typename N>
-vector<N> fun(size_t vecSize) {
 
-	vector<N> vec(vecSize);
+	for (Uniform<NT> gen; from != to;) {
 
-	Uniform<N> gen;
+		generate(from, to, [&]() {
 
-	static N sum;
+			vector<NT> point(N);
+			// TODO: generate на point, использу€ ref(gen)
+			generate(point.begin(), point.end(), ref(gen));
+			return point;
 
-	auto pred = [=](N el) {
-		if (sum + sqr(el) > 1) {
-			//cout << "\nSum + sqr(el) = " << sum + sqr(el) << "	Cur sum is - " << sum << " no adding for element " << el;
-			return true;
+			});
 
-		}
-		else {
-			sum += sqr(el);
-			//cout << "\nCur sum is (after) - " << sum << " adding element " << el;
-			return false;
-		}
-		
-	};
+		float curSum = 0;
 
-	
+		from = remove_if(from, to, [&curSum](auto const& point){
 
-	auto from = vec.begin();
-	auto to = vec.end();
+			for (auto& y : point) {
+			
+				if (curSum <= 1) {
+					curSum += sqr(y);
+					cout << y << endl << curSum << " - is sum \n";
+				}
+				else if (curSum > 1) {
+					cout << "Sum is more than one \n";
+					curSum = 0;
+					return false;
+				}
+				
 
-	generate(from, to, gen);
+			}
 
-	cout << "\n Vector before - \n";
-	for (auto& x : vec) {
-		cout << x << endl;
+			});
 	}
 
-	vec.erase(remove_if(from, to,pred), vec.end());
+	cout << endl;
 
-	cout << "\nvector after - \n";
-
-
-	return vec;
-
+	return to;
 }
 
 int main() {
-	
-	vector<float> vector = fun<float>(30);
 
-	float sum = 0;
-	for (auto& x : vector)
-	{
-		cout << x << "\n";
-		sum += sqr(x);
-	}
-	cout << "sum is - " << sum;
+	vector<vector<float>> points(10);
+	genpoints(5, begin(points), end(points));
+	for (auto& point : points)
+		copy(begin(point), end(point), ostream_iterator<float>(cout << endl, " "));
+	return 0;
+	
+	
 
 	
 	return 0;
