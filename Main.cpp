@@ -1,10 +1,9 @@
 #include <iostream>
-#include <random>
-#include <algorithm>
 #include "Uniform.h"
 #include <iterator>
 #include<vector>
 #include <functional>
+#include <numeric>
 
 /**
 
@@ -17,12 +16,6 @@
 
 **/
 
-using namespace std;
-
-template<typename M>
-M sqr(M m) {
-	return m * m;
-}
 
 template <typename It>
 It genpoints(size_t N, It from, It to) {
@@ -32,34 +25,22 @@ It genpoints(size_t N, It from, It to) {
 
 	for (Uniform<NT> gen; from != to;) {
 
-		generate(from, to, [&]() {
+		std::generate(from, to, [&]() {
 
 			vector<NT> point(N);
-			// TODO: generate на point, использу€ ref(gen)
-			generate(point.begin(), point.end(), ref(gen));
+			
+			std::generate(point.begin(), point.end(), ref(gen));
 			return point;
 
 			});
 
 		float curSum = 0;
 
-		from = remove_if(from, to, [&curSum](auto const& point){
+		from = std::remove_if(from, to, [&curSum](auto const& point){
 
-			for (auto& y : point) {
-			
-				if (curSum <= 1) {
-					curSum += sqr(y);
-					cout << y << endl << curSum << " - is sum \n";
-				}
-				else if (curSum > 1) {
-					cout << "Sum is more than one \n";
-					curSum = 0;
-					return false;
-				}
-				
-
-			}
-
+			if (inner_product(point.begin(), point.end(), point.begin(), 0.0) <= 1.0) return false;
+			else return true;
+		
 			});
 	}
 
@@ -71,14 +52,14 @@ It genpoints(size_t N, It from, It to) {
 int main() {
 
 	vector<vector<float>> points(10);
+
 	genpoints(5, begin(points), end(points));
+
 	for (auto& point : points)
 		copy(begin(point), end(point), ostream_iterator<float>(cout << endl, " "));
+
 	return 0;
-	
 	
 
-	
-	return 0;
 }
 
